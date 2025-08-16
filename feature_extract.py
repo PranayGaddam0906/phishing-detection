@@ -86,7 +86,7 @@ def extract_all_features(url):
         'WebsiteForwarding', 'StatusBarCust', 'DisableRightClick',
         'UsingPopupWindow', 'IframeRedirection', 'AgeofDomain', 'DNSRecording',
         'WebsiteTraffic', 'PageRank', 'GoogleIndex', 'LinksPointingToPage',
-        'StatsReport', 'NumericOnly'   # 🔹 new feature
+        'StatsReport'   # 🔹 new feature
     ]
 
     main_list = []
@@ -119,3 +119,4 @@ if __name__ == "__main__":
 
     pred, proba = model(features)
     print("Final Prediction:", "Phishing" if pred == 1 else "Legitimate")
+
