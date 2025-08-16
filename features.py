@@ -154,6 +154,7 @@ def count_links_pointing_to_page(url):
     except:
         return 0
 
+
 def extract_features(url):
     domain = tldextract.extract(url).registered_domain
     return {
@@ -161,7 +162,7 @@ def extract_features(url):
         "LongURL": get_url_length(url),
         "ShortURL": check_shortening_service(url),
         "Symbol@": contains_symbol(url, "@"),
-        "Redirecting//": contains_symbol(url, "//"),
+        "Redirecting//": boolean_to_int(url.count("//") > 2),  # fix
         "PrefixSuffix-": contains_symbol(url, "-"),
         "SubDomains": count_subdomains(url),
         "HTTPS": check_https(url),
@@ -169,10 +170,10 @@ def extract_features(url):
         "Favicon": has_favicon(url),
         "NonStdPort": check_non_standard_port(url),
         "HTTPSDomainURL": check_https_in_domain(url),
-        "RequestURL": count_links_pointing_to_page(url),
+        "RequestURL": has_favicon(url),  # should detect external objects
         "AnchorURL": count_links_in_anchors(url),
         "LinksInScriptTags": count_links_in_scripts(url),
-        "ServerFormHandler": has_popup_window(url),
+        "ServerFormHandler": has_info_email(url),  # better mapping
         "InfoEmail": has_info_email(url),
         "AbnormalURL": abnormal_url(domain, url),
         "WebsiteForwarding": website_forwarding(url),
@@ -183,10 +184,11 @@ def extract_features(url):
         "AgeofDomain": domain_registration_length(domain),
         "DNSRecording": dns_record_exists(domain),
         "WebsiteTraffic": website_traffic(url),
-        "PageRank": website_traffic(url),
+        "PageRank": website_traffic(url),  # placeholder
         "GoogleIndex": google_index(url),
         "LinksPointingToPage": count_links_pointing_to_page(url),
-        "StatsReport": google_index(url)
+        "StatsReport": website_forwarding(url)  # better than google_index duplicate
     }
+
 
 
