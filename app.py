@@ -3,7 +3,7 @@ import joblib
 import streamlit as st
 import pandas as pd
 
-from feature_extract import extract_features
+from feature_extract import extract_all_features
 import train  # <-- your train.py with train_model() defined
 
 MODEL_FILE = "hybrid_model.joblib"
@@ -27,11 +27,9 @@ if st.button("Predict"):
     if url:
         try:
             # Extract features from the URL
-            features = extract_features(url)
+            features = extract_all_features(url)
             df = pd.DataFrame([features])
-
-            # Predict
-            prediction = model.predict(df)[0]
+            prediction = model.predict([features])[0] 
 
             if prediction == 1:
                 st.error("🚨 Phishing Website Detected!")
