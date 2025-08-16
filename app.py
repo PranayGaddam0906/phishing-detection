@@ -15,11 +15,47 @@ st.write("A machine learning app to detect phishing websites.")
 
 # Extended safe domain whitelist
 SAFE_DOMAINS = [
-    "linkedin.com", "github.com", "google.com", "twitter.com",
-    "facebook.com", "instagram.com", "youtube.com", "reddit.com",
-    "stackoverflow.com", "medium.com", "quora.com", "wikipedia.org",
-    "amazon.com", "apple.com", "microsoft.com", "netflix.com"
+    # Social Media
+    "linkedin.com", "facebook.com", "instagram.com", "twitter.com", "reddit.com",
+    "tiktok.com", "snapchat.com", "pinterest.com", "whatsapp.com", "telegram.org",
+    
+    # Tech / Developer
+    "github.com", "gitlab.com", "bitbucket.org", "stackoverflow.com", "medium.com",
+    "quora.com", "wikipedia.org", "leetcode.com", "hackerrank.com", "geeksforgeeks.org",
+    "kaggle.com", "codeforces.com", "topcoder.com", "codechef.com", "dev.to",
+    
+    # Search / Email
+    "google.com", "bing.com", "yahoo.com", "duckduckgo.com", "outlook.com", "protonmail.com",
+    
+    # E-commerce / Marketplaces
+    "amazon.com", "flipkart.com", "ebay.com", "aliexpress.com", "etsy.com", "walmart.com",
+    "bestbuy.com", "target.com", "shopify.com", "craigslist.org",
+    
+    # News / Media
+    "bbc.com", "cnn.com", "nytimes.com", "theguardian.com", "forbes.com",
+    "bloomberg.com", "reuters.com", "huffpost.com", "washingtonpost.com", "buzzfeed.com",
+    
+    # Entertainment / Streaming
+    "netflix.com", "youtube.com", "spotify.com", "disneyplus.com", "hulu.com",
+    "primevideo.com", "twitch.tv", "soundcloud.com", "vimeo.com", "imdb.com",
+    
+    # Education
+    "coursera.org", "edx.org", "udemy.com", "khanacademy.org", "udacity.com",
+    "futurelearn.com", "skillshare.com", "academic.microsoft.com", "ocw.mit.edu", "openlearning.com",
+    
+    # Banking / Finance
+    "paypal.com", "chase.com", "bankofamerica.com", "wellsfargo.com", "hsbc.com",
+    "citibank.com", "americanexpress.com", "discover.com", "capitalone.com", "stripe.com",
+    
+    # Misc / Popular Services
+    "apple.com", "microsoft.com", "adobe.com", "dropbox.com", "slack.com",
+    "zoom.us", "canva.com", "notion.so", "figma.com", "asana.com",
+    
+    # Travel / Booking
+    "booking.com", "airbnb.com", "expedia.com", "tripadvisor.com", "uber.com",
+    "lyft.com", "hotels.com", "kayak.com", "skyscanner.com", "trivago.com"
 ]
+
 
 # 🔹 Load or train model
 if os.path.exists(MODEL_FILE):
