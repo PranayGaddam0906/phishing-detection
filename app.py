@@ -4,21 +4,29 @@ import streamlit as st
 import pandas as pd
 
 from feature_extract import extract_features
-import train  # your train.py script
+import train  # <-- your train.py with train_model() defined
 
 MODEL_FILE = "hybrid_model.joblib"
 
-# Auto-train if model doesn't exist
+# Title
 st.title("🔒 Phishing Website Detection")
 st.write("A machine learning app to detect phishing websites.")
 
-# User input: website URL
+# 🔹 Load or train model
+if os.path.exists(MODEL_FILE):
+    model = joblib.load(MODEL_FILE)
+else:
+    st.warning("Model not found. Training a new one...")
+    model = train.train_model()  # <-- now this works because we fixed train.py
+    joblib.dump(model, MODEL_FILE)
+
+# User input
 url = st.text_input("Enter Website URL")
 
 if st.button("Predict"):
     if url:
         try:
-            # Extract features from the URL using your custom function
+            # Extract features from the URL
             features = extract_features(url)
             df = pd.DataFrame([features])
 
