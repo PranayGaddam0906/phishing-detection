@@ -3,35 +3,29 @@ import joblib
 import pandas as pd
 from feature_extract import extract_features
 
-features = extract_features(user_url)
-
-
-
-# Load trained model
+# Load model
 model = joblib.load("hybrid_model.joblib")
 
+st.title("🔎 Phishing Website Detection App")
 
-st.title("🔒 Phishing Website Detection")
-st.write("A machine learning app to detect phishing websites.")
+# Input box
+user_url = st.text_input("Enter a URL to check:")
 
-# User input: website URL
-url = st.text_input("Enter Website URL")
+if st.button("Check URL"):
+    if user_url:
+        # Extract features for the given URL
+        features = extract_features(user_url)
 
-if st.button("Predict"):
-    if url:
-        try:
-            # Extract features from the URL using your custom function
-            features = extract_features(url)
-            df = pd.DataFrame([features])
+        # Convert features into DataFrame for model
+        X = pd.DataFrame([features])
 
-            # Predict
-            prediction = model.predict(df)[0]
+        # Predict
+        prediction = model.predict(X)[0]
 
-            if prediction == 1:
-                st.error("🚨 Phishing Website Detected!")
-            else:
-                st.success("✅ Legitimate Website")
-        except Exception as e:
-            st.error(f"Error processing URL: {e}")
+        # Show result
+        if prediction == 1:
+            st.success("✅ This looks like a **legitimate website**.")
+        else:
+            st.error("⚠️ Warning: This might be a **phishing website**!")
     else:
         st.warning("Please enter a URL first.")
