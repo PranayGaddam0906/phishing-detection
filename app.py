@@ -1,6 +1,8 @@
 import os
 import joblib
 import streamlit as st
+import pandas as pd
+
 from feature_extract import extract_features
 import train  # your train.py script
 
