@@ -14,17 +14,18 @@ def train_model():
     # Load dataset
     data = pd.read_csv("phishing.csv")
 
-    # 🔹 Add NumericOnly feature
-    if "url" in data.columns:  # make sure dataset has a URL column
+    # Add NumericOnly feature if URL column exists
+    if "url" in data.columns:
         data["NumericOnly"] = data["url"].apply(
-            lambda u: str(u).replace("http://", "")
-                           .replace("https://", "")
-                           .replace("www.", "")
-                           .split("/")[0]
-                           .isdigit()
+            lambda u: int(str(u).replace("http://", "")
+                                   .replace("https://", "")
+                                   .replace("www.", "")
+                                   .split("/")[0]
+                                   .isdigit())
         )
+        # Drop raw URL (not numeric)
+        data = data.drop(columns=["url"])
     else:
-        # If no URL column exists, fallback
         data["NumericOnly"] = 0
 
     # Features & Labels
@@ -49,7 +50,9 @@ def train_model():
         subsample=0.8,
         colsample_bytree=0.8,
         random_state=42,
-        n_jobs=-1
+        n_jobs=-1,
+        use_label_encoder=False,
+        eval_metric="logloss"
     )
 
     # Hybrid: Soft Voting
