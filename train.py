@@ -14,8 +14,21 @@ def train_model():
     # Load dataset
     data = pd.read_csv("phishing.csv")
 
+    # 🔹 Add NumericOnly feature
+    if "url" in data.columns:  # make sure dataset has a URL column
+        data["NumericOnly"] = data["url"].apply(
+            lambda u: str(u).replace("http://", "")
+                           .replace("https://", "")
+                           .replace("www.", "")
+                           .split("/")[0]
+                           .isdigit()
+        )
+    else:
+        # If no URL column exists, fallback
+        data["NumericOnly"] = 0
+
     # Features & Labels
-    X = data.drop(["Index", "class"], axis=1)
+    X = data.drop(["Index", "class"], axis=1, errors="ignore")
     y = data["class"]
 
     # Train-test split
@@ -59,3 +72,6 @@ def train_model():
     print(f"💾 Hybrid model saved as {MODEL_FILE}")
 
     return hybrid
+
+if __name__ == "__main__":
+    train_model()
