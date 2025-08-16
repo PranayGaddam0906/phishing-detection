@@ -1,33 +1,16 @@
-import streamlit as st
+import os
 import joblib
-import pandas as pd
+import streamlit as st
 from feature_extract import extract_features
+import train  # your train.py script
 
-# Load trained model
-model = joblib.load("hybrid_model.joblib")
+MODEL_FILE = "hybrid_model.joblib"
 
+# Auto-train if model doesn't exist
+if not os.path.exists(MODEL_FILE):
+    st.warning("⚠️ Model not found — training a new one, please wait...")
+    train.main()  # assuming train.py has a main() function
+model = joblib.load(MODEL_FILE)
 
 st.title("🔒 Phishing Website Detection")
-st.write("A machine learning app to detect phishing websites.")
 
-# User input: website URL
-url = st.text_input("Enter Website URL")
-
-if st.button("Predict"):
-    if url:
-        try:
-            # Extract features from the URL using your custom function
-            features = extract_features(url)
-            df = pd.DataFrame([features])
-
-            # Predict
-            prediction = model.predict(df)[0]
-
-            if prediction == 1:
-                st.error("🚨 Phishing Website Detected!")
-            else:
-                st.success("✅ Legitimate Website")
-        except Exception as e:
-            st.error(f"Error processing URL: {e}")
-    else:
-        st.warning("Please enter a URL first.")
