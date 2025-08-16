@@ -6,39 +6,24 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import VotingClassifier
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.base import BaseEstimator, TransformerMixin
 from xgboost import XGBClassifier
+from feature_extract import extract_features   # ✅ central feature extractor
 
 MODEL_FILE = "hybrid_model.joblib"
-
-# ✅ Custom transformer for NumericOnly feature
-class NumericOnlyExtractor(BaseEstimator, TransformerMixin):
-    def __init__(self, url_col="url"):
-        self.url_col = url_col
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        X = X.copy()
-        if self.url_col in X.columns:
-            X["NumericOnly"] = X[self.url_col].apply(
-                lambda u: str(u).replace("http://", "")
-                               .replace("https://", "")
-                               .replace("www.", "")
-                               .split("/")[0]
-                               .isdigit()
-            ).astype(int)
-        else:
-            X["NumericOnly"] = 0
-        return X
 
 def train_model():
     # Load dataset
     data = pd.read_csv("phishing.csv")
 
+    # ✅ Extract features from every URL in dataset
+    if "url" in data.columns:
+        feature_df = data["url"].apply(extract_features).apply(pd.Series)
+        data = pd.concat([data, feature_df], axis=1)
+    else:
+        raise ValueError("❌ Dataset does not have 'url' column")
+
     # Features & Labels
-    X = data.drop(["Index", "class"], axis=1, errors="ignore")
+    X = data.drop(["Index", "class", "url"], axis=1, errors="ignore")
     y = data["class"]
 
     # Train-test split
@@ -46,29 +31,25 @@ def train_model():
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Define pipelines
+    # Define models
     knn_pipeline = Pipeline([
-        ("feature_engineering", NumericOnlyExtractor()),   # ✅ Always applied
         ("scaler", StandardScaler()),
         ("knn", KNeighborsClassifier(n_neighbors=5, weights="distance"))
     ])
 
-    xgb_pipeline = Pipeline([
-        ("feature_engineering", NumericOnlyExtractor()),   # ✅ Same for XGB
-        ("xgb", XGBClassifier(
-            n_estimators=300,
-            max_depth=6,
-            learning_rate=0.1,
-            subsample=0.8,
-            colsample_bytree=0.8,
-            random_state=42,
-            n_jobs=-1
-        ))
-    ])
+    xgb_model = XGBClassifier(
+        n_estimators=300,
+        max_depth=6,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42,
+        n_jobs=-1
+    )
 
     # Hybrid: Soft Voting
     hybrid = VotingClassifier(
-        estimators=[("knn", knn_pipeline), ("xgb", xgb_pipeline)],
+        estimators=[("knn", knn_pipeline), ("xgb", xgb_model)],
         voting="soft"
     )
 
@@ -86,7 +67,6 @@ def train_model():
     print(f"💾 Hybrid model saved as {MODEL_FILE}")
 
     return hybrid
-
 
 if __name__ == "__main__":
     train_model()
