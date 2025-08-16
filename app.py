@@ -1,8 +1,10 @@
 import streamlit as st
 import joblib
 import pandas as pd
-from feature_extract import get_features
-features = get_features(user_url)
+from feature_extract import extract_features
+
+features = extract_features(user_url)
+
 
 
 # Load trained model
