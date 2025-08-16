@@ -1,5 +1,6 @@
 import pandas as pd
 import joblib
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -10,23 +11,32 @@ from xgboost import XGBClassifier
 
 MODEL_FILE = "hybrid_model.joblib"
 
+
+# 🔹 Custom transformer to add NumericOnly feature
+class AddNumericOnly(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X = X.copy()
+        if "url" in X.columns:
+            X["NumericOnly"] = X["url"].apply(
+                lambda u: int(str(u).replace("http://", "")
+                                       .replace("https://", "")
+                                       .replace("www.", "")
+                                       .split("/")[0]
+                                       .isdigit())
+            )
+            X = X.drop(columns=["url"])
+        else:
+            if "NumericOnly" not in X.columns:
+                X["NumericOnly"] = 0
+        return X
+
+
 def train_model():
     # Load dataset
     data = pd.read_csv("phishing.csv")
-
-    # Add NumericOnly feature if URL column exists
-    if "url" in data.columns:
-        data["NumericOnly"] = data["url"].apply(
-            lambda u: int(str(u).replace("http://", "")
-                                   .replace("https://", "")
-                                   .replace("www.", "")
-                                   .split("/")[0]
-                                   .isdigit())
-        )
-        # Drop raw URL (not numeric)
-        data = data.drop(columns=["url"])
-    else:
-        data["NumericOnly"] = 0
 
     # Features & Labels
     X = data.drop(["Index", "class"], axis=1, errors="ignore")
@@ -37,7 +47,7 @@ def train_model():
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Define models
+    # Define base models
     knn_pipeline = Pipeline([
         ("scaler", StandardScaler()),
         ("knn", KNeighborsClassifier(n_neighbors=5, weights="distance"))
@@ -55,11 +65,14 @@ def train_model():
         eval_metric="logloss"
     )
 
-    # Hybrid: Soft Voting
-    hybrid = VotingClassifier(
-        estimators=[("knn", knn_pipeline), ("xgb", xgb_model)],
-        voting="soft"
-    )
+    # 🔹 Wrap everything in a single pipeline
+    hybrid = Pipeline([
+        ("add_numeric", AddNumericOnly()),
+        ("voting", VotingClassifier(
+            estimators=[("knn", knn_pipeline), ("xgb", xgb_model)],
+            voting="soft"
+        ))
+    ])
 
     # Train
     hybrid.fit(X_train, y_train)
@@ -70,11 +83,12 @@ def train_model():
     print(f"✅ Hybrid Model Accuracy: {acc * 100:.2f}%")
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-    # Save model
+    # Save the whole pipeline
     joblib.dump(hybrid, MODEL_FILE)
     print(f"💾 Hybrid model saved as {MODEL_FILE}")
 
     return hybrid
+
 
 if __name__ == "__main__":
     train_model()
